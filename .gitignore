@@ -1,0 +1,11 @@
+env/
+__pycache__/
+*.pyc
+*.pkl
+*.pt
+*.bin
+data/
+models/
+.env
+analysis_history.json
+.DS_Store
