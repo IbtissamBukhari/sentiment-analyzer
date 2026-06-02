@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+
+  api:
+
+    build: .
+
+    container_name: sentiment-api
+
+    ports:
+      - "8000:8000"
+
+    restart: unless-stopped

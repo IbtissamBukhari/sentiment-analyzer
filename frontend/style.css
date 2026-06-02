@@ -1,0 +1,179 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #f5f7fb;
+    color: #1f2937;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: auto;
+    padding: 40px 0;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+header h1 {
+    font-size: 48px;
+    font-weight: 700;
+    color: #111827;
+}
+
+header p {
+    color: #6b7280;
+    max-width: 700px;
+    margin: auto;
+    margin-top: 12px;
+    line-height: 1.7;
+}
+
+.input-card,
+.result-card,
+.csv-card {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+}
+
+.input-card {
+    margin-bottom: 30px;
+}
+
+textarea {
+    width: 100%;
+    height: 180px;
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+    resize: vertical;
+    font-size: 15px;
+}
+
+.button-group {
+    margin-top: 15px;
+}
+
+button {
+    border: none;
+    padding: 12px 22px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    background: #2563eb;
+    color: white;
+    margin-right: 10px;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+.secondary-btn {
+    background: #475569;
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.loading {
+    margin-top: 15px;
+    font-weight: 600;
+    color: #2563eb;
+}
+
+.hidden {
+    display: none;
+}
+
+.sentiment-positive {
+    color: #16a34a;
+    font-weight: 700;
+}
+
+.sentiment-negative {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.sentiment-neutral {
+    color: #ca8a04;
+    font-weight: 700;
+}
+
+.csv-card h2 {
+    margin-bottom: 15px;
+}
+
+#csvResult {
+    margin-top: 15px;
+}
+
+.explanation-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.explanation-row {
+    display: flex;
+    flex-direction: column;
+}
+
+.explanation-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.word-label {
+    font-weight: 600;
+}
+
+.impact-value {
+    color: #6b7280;
+}
+
+.bar-wrapper {
+    width: 100%;
+    height: 14px;
+    background: #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.bar {
+    height: 14px;
+    border-radius: 8px;
+}
+
+.bar-positive {
+    background: #22c55e;
+}
+
+.bar-negative {
+    background: #ef4444;
+}
+
+@media(max-width:900px) {
+
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+
+}

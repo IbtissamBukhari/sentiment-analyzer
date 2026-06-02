@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis AI</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <header>
+            <h1>Sentiment Analysis AI</h1>
+
+            <p>
+                Analyze reviews, customer feedback, tweets and product sentiment
+                using RoBERTa and LIME Explainability.
+            </p>
+        </header>
+
+        <section class="input-card">
+
+            <h2>Analyze Text</h2>
+
+            <textarea id="textInput"
+                placeholder="Enter a review, tweet, product feedback, or any text..."></textarea>
+
+            <div class="button-group">
+
+                <button onclick="predictSentiment()">
+                    Predict Sentiment
+                </button>
+
+                <button class="secondary-btn"
+                    onclick="explainSentiment()">
+                    Explain Prediction
+                </button>
+
+            </div>
+
+            <div id="loading" class="loading hidden">
+                Processing...
+            </div>
+
+        </section>
+
+        <div class="results-grid">
+
+            <section class="result-card">
+
+                <h2>Prediction Result</h2>
+
+                <div id="predictionResult">
+                    No prediction yet.
+                </div>
+
+            </section>
+
+            <section class="result-card">
+
+                <h2>LIME Explanation</h2>
+
+                <div id="explanationResult">
+                    No explanation yet.
+                </div>
+
+            </section>
+
+        </div>
+
+        <section class="csv-card">
+
+            <h2>Batch Analysis (CSV)</h2>
+
+            <input type="file"
+                id="csvFile"
+                accept=".csv">
+
+            <button onclick="uploadCSV()">
+                Analyze CSV
+            </button>
+
+            <div id="csvResult"></div>
+
+        </section>
+
+    </div>
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>

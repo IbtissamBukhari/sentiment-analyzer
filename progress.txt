@@ -1,0 +1,23 @@
+Project: Sentiment Analysis API for Product Reviews
+Start date: tomorrow
+
+Conda env: 
+C:\Users\Ibtissam Bukhari\Desktop\Projects\sentiment-analyzer\env
+
+Kaggle collection: sentiment-analyzer
+Kaggle notebooks:
+- 01-text-preprocessing (created, datasets added)
+- 02-model-exploration (created, datasets added)
+- 03-lime-explainability (created, datasets added)
+- 04-model-evaluation (created, datasets added)
+
+Datasets on Kaggle:
+- amazon-product-reviews
+- imdb-dataset-of-50k-movie-reviews
+
+Prompts completed: none
+Current status: project structure done, Kaggle ready
+Next step: tomorrow 9am — Prompt 1 Project Setup
+
+Files completed: none
+Files in progress: none
