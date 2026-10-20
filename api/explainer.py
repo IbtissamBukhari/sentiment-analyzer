@@ -12,7 +12,7 @@ from lime.lime_text import LimeTextExplainer
 
 from api.classifier import LABELS, score_batch
 
-NUM_SAMPLES = int(os.getenv("LIME_NUM_SAMPLES", "300"))
+NUM_SAMPLES = int(os.getenv("LIME_NUM_SAMPLES", "200"))
 
 _explainer = LimeTextExplainer(class_names=LABELS, random_state=42)
 

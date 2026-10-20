@@ -50,7 +50,7 @@ The model was evaluated in notebook 02 on a balanced sample of 15,000 Amazon Fin
 | Method | Endpoint | Description |
 |:--:|:--|:--|
 | POST | `/predict` | Sentiment label, confidence and all class probabilities |
-| POST | `/explain` | Prediction plus the 10 most influential words (takes 10-30 s) |
+| POST | `/explain` | Prediction plus the 10 most influential words (can take up to a minute on free hosting) |
 | POST | `/predict_csv` | Upload a CSV, download it with predictions added |
 | GET | `/model-info` | Model name and evaluation results |
 | GET | `/health` | Health check, including whether the model is loaded |

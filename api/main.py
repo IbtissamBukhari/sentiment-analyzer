@@ -1,5 +1,7 @@
 import io
+import logging
 import os
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -12,6 +14,8 @@ from api import classifier
 from api.batch_processor import MAX_ROWS, CSVError, process_csv
 from api.explainer import explain_text
 from api.schemas import ExplanationResponse, PredictionResponse, TextInput
+
+logger = logging.getLogger("uvicorn.error")
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 MAX_UPLOAD_BYTES = 2 * 1024 * 1024
@@ -75,7 +79,10 @@ def predict(data: TextInput):
 
 @app.post("/explain", response_model=ExplanationResponse)
 def explain(data: TextInput):
-    return explain_text(data.text)
+    start = time.perf_counter()
+    result = explain_text(data.text)
+    logger.info("explain: %d words in %.1f s", len(data.text.split()), time.perf_counter() - start)
+    return result
 
 
 @app.post("/predict_csv")

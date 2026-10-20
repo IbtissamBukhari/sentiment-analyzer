@@ -34,7 +34,7 @@ class OnnxSentimentModel:
         from tokenizers import Tokenizer
 
         options = ort.SessionOptions()
-        options.intra_op_num_threads = int(os.getenv("ORT_THREADS", "2"))
+        options.intra_op_num_threads = int(os.getenv("ORT_THREADS", "1"))
         self.session = ort.InferenceSession(
             str(model_dir / "model_quantized.onnx"),
             sess_options=options,

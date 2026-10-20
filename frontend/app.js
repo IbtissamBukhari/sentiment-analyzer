@@ -125,7 +125,7 @@ async function explainSentiment() {
   const text = readText();
   if (!text) return;
   setBusy(true);
-  setStatus('Explaining... this takes 10-30 seconds.');
+  setStatus('Explaining... this can take up to a minute on the free server.');
   try {
     renderExplanation(text, await postJson('/explain', { text }));
     setStatus('');
