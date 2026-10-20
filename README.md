@@ -4,7 +4,10 @@
 
 A web app and REST API that classifies text as positive, neutral or negative with a RoBERTa transformer, and explains each prediction word by word with LIME. It also scores whole CSV files of reviews in one request. The model is quantized to 8-bit and served with ONNX Runtime, so the whole app runs in under 512 MB of memory on free hosting.
 
-**Live demo:** _coming soon_
+**Live demo:** https://sentiment-analyzer-rm0p.onrender.com
+**API docs:** https://sentiment-analyzer-rm0p.onrender.com/docs
+
+Hosted on Render's free plan: if the app has been idle, the first request can take up to a minute while it wakes up.
 
 ---
 
