@@ -1,61 +1,48 @@
+"""Word-level explanations with LIME.
+
+LIME perturbs the input by removing words, scores every variant with the
+classifier, and fits a simple linear model to estimate how much each word
+pushed the prediction towards the predicted class.
+"""
+
+import os
+
 import numpy as np
 from lime.lime_text import LimeTextExplainer
-from api.classifier import classifier
+
+from api.classifier import LABELS, score_batch
+
+NUM_SAMPLES = int(os.getenv("LIME_NUM_SAMPLES", "300"))
+
+_explainer = LimeTextExplainer(class_names=LABELS, random_state=42)
 
 
-CLASS_NAMES = ["negative", "neutral", "positive"]
-
-explainer = LimeTextExplainer(class_names=CLASS_NAMES)
-
-
-def predict_proba(texts):
-    outputs = []
-
-    for text in texts:
-
-        result = classifier(text[:512])[0]
-
-        score_dict = {
-            item["label"]: item["score"]
-            for item in result
-        }
-
-        outputs.append([
-            score_dict["negative"],
-            score_dict["neutral"],
-            score_dict["positive"]
-        ])
-
-    return np.array(outputs)
+def _predict_proba(texts):
+    return np.array([[s.get(label, 0.0) for label in LABELS] for s in score_batch(texts)])
 
 
-def explain_text(text: str):
+def explain_text(text: str, num_features: int = 10, num_samples: int = NUM_SAMPLES) -> dict:
+    probabilities = _predict_proba([text])[0]
+    predicted = int(np.argmax(probabilities))
 
-    exp = explainer.explain_instance(
+    # Explain the predicted class. Without `labels`, LIME explains class 1
+    # ("neutral") for every input, which made positive words look negative.
+    exp = _explainer.explain_instance(
         text_instance=text,
-        classifier_fn=predict_proba,
-        num_features=10,
-        num_samples=500
+        classifier_fn=_predict_proba,
+        num_features=num_features,
+        num_samples=num_samples,
+        labels=(predicted,),
     )
 
-    explanation = exp.as_list()
+    words = [
+        {"word": str(word), "impact": round(float(weight), 4)}
+        for word, weight in exp.as_list(label=predicted)
+    ]
+    words.sort(key=lambda w: abs(w["impact"]), reverse=True)
 
-    result = {
-        "prediction": CLASS_NAMES[np.argmax(exp.predict_proba)],
-        "confidence": float(np.max(exp.predict_proba)),
-        "explanation": []
+    return {
+        "prediction": LABELS[predicted],
+        "confidence": round(float(probabilities[predicted]), 4),
+        "explanation": words,
     }
-
-    for word, score in explanation:
-        result["explanation"].append({
-            "word": str(word),
-            "impact": float(score)
-        })
-
-    result["explanation"] = sorted(
-        result["explanation"],
-        key=lambda x: abs(x["impact"]),
-        reverse=True
-    )
-
-    return result

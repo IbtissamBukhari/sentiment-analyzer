@@ -1,15 +1,24 @@
 FROM python:3.11-slim
 
-WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PORT=8000
 
-COPY requirements.txt .
+RUN useradd --create-home --uid 1000 appuser
+WORKDIR /home/appuser/app
 
+COPY api/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN python -m spacy download en_core_web_sm
+COPY api ./api
+COPY frontend ./frontend
+RUN mkdir -p models && chown -R appuser /home/appuser/app
 
-COPY . .
+USER appuser
+
+# Bake the 126 MB quantized model into the image so startup needs no download
+RUN python -m api.download_model
 
 EXPOSE 8000
 
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn api.main:app --host 0.0.0.0 --port ${PORT}"]

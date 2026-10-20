@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: pytest -v
+
+  quantization:
+    name: quantized vs original model
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install both runtimes
+        run: |
+          pip install torch==2.3.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install transformers==4.40.1 -r api/requirements.txt
+      - run: python -m api.download_model
+      - run: python -m tests.quantization_check
+
+  docker:
+    name: docker (512 MB limit)
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: |
+          set -o pipefail
+          docker build -t sentiment-analyzer . 2>&1 | tee build.log || {
+            { echo '### Docker build failed'; echo '```'; tail -40 build.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
+      - name: Run with the same memory limit as Render's free plan
+        run: |
+          trap 'if [ $? -ne 0 ]; then { echo "### Container test failed"; echo "\`\`\`"; docker logs app 2>&1 | tail -40; echo "\`\`\`"; } >> "$GITHUB_STEP_SUMMARY"; fi' EXIT
+          docker run -d -p 8000:8000 --memory=512m --memory-swap=512m --name app sentiment-analyzer
+          for i in $(seq 1 40); do
+            curl -sf http://localhost:8000/health | grep -q '"model_loaded":true' && break
+            sleep 3
+          done
+          set -e
+          curl -sf -X POST localhost:8000/predict -H 'Content-Type: application/json' \
+            -d '{"text":"Absolutely love it, works perfectly"}' | tee predict.json
+          grep -q '"label":"positive"' predict.json
+          echo
+          curl -sf -X POST localhost:8000/explain -H 'Content-Type: application/json' \
+            -d '{"text":"The coffee tastes great but the price went up again and the bag is half the size"}' > explain.json
+          head -c 300 explain.json; echo
+          { echo text; for i in $(seq 1 200); do echo '"Great product, arrived on time"'; done; } > batch.csv
+          curl -sf -F "file=@batch.csv" localhost:8000/predict_csv | head -3
+          mem=$(docker stats --no-stream --format '{{.MemUsage}}' app)
+          echo "Memory after load test: $mem" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "::notice title=Memory under 512 MB limit::$mem after prediction, explanation and 200-row CSV"
+          test "$(docker inspect -f '{{.State.OOMKilled}}' app)" = "false"
+          test "$(docker inspect -f '{{.State.Running}}' app)" = "true"

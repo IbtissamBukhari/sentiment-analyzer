@@ -1,0 +1,4 @@
+# Extra packages used only in the exploration notebooks
+spacy==3.7.4
+matplotlib==3.10.9
+jupyter

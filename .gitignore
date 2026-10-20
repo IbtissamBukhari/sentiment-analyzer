@@ -9,3 +9,4 @@ models/
 .env
 analysis_history.json
 .DS_Store
+.pytest_cache/

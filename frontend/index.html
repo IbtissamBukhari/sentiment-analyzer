@@ -1,100 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentiment Analysis AI</title>
-
-    <link rel="stylesheet" href="style.css">
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sentiment Analysis AI</title>
+  <meta name="description" content="Three-class sentiment analysis with RoBERTa and word-level LIME explanations." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css?v=2" />
 </head>
-
 <body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">SA</span>
+        <span class="brand-name">Sentiment Analysis AI</span>
+      </div>
+      <nav class="header-links">
+        <a href="/docs" target="_blank" rel="noopener">API docs</a>
+        <a href="https://github.com/IbtissamBukhari/sentiment-analyzer" target="_blank" rel="noopener">Source</a>
+      </nav>
+    </div>
+  </header>
 
-    <div class="container">
+  <main class="wrap">
+    <section class="intro">
+      <p class="eyebrow">RoBERTa + LIME</p>
+      <h1>See what a review says, and which words decided it.</h1>
+      <p class="lede">Classify any English text as positive, neutral or negative with a transformer model, then ask for a word-level explanation of the prediction.</p>
+    </section>
 
-        <header>
-            <h1>Sentiment Analysis AI</h1>
+    <section class="card" aria-labelledby="analyze-title">
+      <div class="card-head">
+        <h2 id="analyze-title">Analyze text</h2>
+        <span class="char-count" id="charCount">0 / 5000</span>
+      </div>
+      <textarea id="textInput" maxlength="5000" placeholder="Paste a product review, tweet or customer comment..."></textarea>
+      <div class="examples">
+        <span class="examples-label">Try:</span>
+        <button type="button" class="chip" data-example="The battery lasts all week and the screen is gorgeous. Best purchase I have made this year.">Positive</button>
+        <button type="button" class="chip" data-example="It arrived two weeks late, the box was crushed and support never replied to my emails.">Negative</button>
+        <button type="button" class="chip" data-example="It does what the description says. Nothing special, but it works for now.">Neutral</button>
+        <button type="button" class="chip" data-example="The coffee tastes great, but the price went up again and the bag is half the size it used to be.">Mixed</button>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" id="predictBtn">Predict sentiment</button>
+        <button type="button" class="btn btn-secondary" id="explainBtn">Explain prediction</button>
+        <span class="status" id="status" role="status" aria-live="polite"></span>
+      </div>
+    </section>
 
-            <p>
-                Analyze reviews, customer feedback, tweets and product sentiment
-                using RoBERTa and LIME Explainability.
-            </p>
-        </header>
+    <div class="grid">
+      <section class="card" aria-labelledby="result-title">
+        <h2 id="result-title">Prediction</h2>
+        <div id="predictionResult" class="placeholder">Run a prediction to see the result.</div>
+      </section>
 
-        <section class="input-card">
-
-            <h2>Analyze Text</h2>
-
-            <textarea id="textInput"
-                placeholder="Enter a review, tweet, product feedback, or any text..."></textarea>
-
-            <div class="button-group">
-
-                <button onclick="predictSentiment()">
-                    Predict Sentiment
-                </button>
-
-                <button class="secondary-btn"
-                    onclick="explainSentiment()">
-                    Explain Prediction
-                </button>
-
-            </div>
-
-            <div id="loading" class="loading hidden">
-                Processing...
-            </div>
-
-        </section>
-
-        <div class="results-grid">
-
-            <section class="result-card">
-
-                <h2>Prediction Result</h2>
-
-                <div id="predictionResult">
-                    No prediction yet.
-                </div>
-
-            </section>
-
-            <section class="result-card">
-
-                <h2>LIME Explanation</h2>
-
-                <div id="explanationResult">
-                    No explanation yet.
-                </div>
-
-            </section>
-
-        </div>
-
-        <section class="csv-card">
-
-            <h2>Batch Analysis (CSV)</h2>
-
-            <input type="file"
-                id="csvFile"
-                accept=".csv">
-
-            <button onclick="uploadCSV()">
-                Analyze CSV
-            </button>
-
-            <div id="csvResult"></div>
-
-        </section>
-
+      <section class="card" aria-labelledby="explain-title">
+        <h2 id="explain-title">Why the model decided this</h2>
+        <div id="explanationResult" class="placeholder">Click <strong>Explain prediction</strong> to see which words mattered. LIME re-scores a few hundred variations of your text, so this takes 10-30 seconds.</div>
+      </section>
     </div>
 
-    <script src="app.js"></script>
+    <section class="card" aria-labelledby="batch-title">
+      <h2 id="batch-title">Batch analysis</h2>
+      <p class="muted">Upload a CSV with a column named <code>text</code>, <code>review</code>, <code>comment</code>, <code>content</code> or <code>feedback</code>. You get the same file back with <code>sentiment</code> and <code>confidence</code> columns added. Up to <span id="maxRows">500</span> rows.</p>
+      <div class="upload-row">
+        <input type="file" id="csvFile" accept=".csv,text/csv" />
+        <button type="button" class="btn btn-primary" id="csvBtn">Analyze CSV</button>
+      </div>
+      <div id="csvResult" class="status-block" role="status" aria-live="polite"></div>
+    </section>
 
+    <section class="card" aria-labelledby="model-title">
+      <h2 id="model-title">How well it works</h2>
+      <p class="muted">Evaluated on a balanced sample of 15,000 Amazon food reviews (5,000 per class), where 1-2 stars are negative, 3 stars neutral and 4-5 stars positive.</p>
+      <div class="metrics">
+        <div class="metric"><span class="metric-val">81%</span><span class="metric-label">Correct on positive and negative reviews</span></div>
+        <div class="metric"><span class="metric-val">61%</span><span class="metric-label">Three-class accuracy</span></div>
+        <div class="metric"><span class="metric-val">20%</span><span class="metric-label">Neutral recall</span></div>
+      </div>
+      <p class="muted small">The model separates clearly positive and negative reviews well. Three-star reviews are the hard case: they often mix praise and complaints, and the model usually assigns them to one side.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <span>Built by Syed Ali Ibtissam Bukhari</span>
+      <span class="footer-links">
+        <a href="https://github.com/IbtissamBukhari" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.linkedin.com/in/syed-ali-ibtissam-bukhari-50438028a" target="_blank" rel="noopener">LinkedIn</a>
+      </span>
+    </div>
+  </footer>
+
+  <script src="/static/app.js?v=2"></script>
 </body>
-
 </html>

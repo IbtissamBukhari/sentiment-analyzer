@@ -1,87 +1,98 @@
-from fastapi import FastAPI
-from api.schemas import TextInput, PredictionResponse, ExplanationResponse
-from api.classifier import predict
-from api.explainer import explain_text
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi import UploadFile, File
-from fastapi.responses import StreamingResponse
-
-from api.batch_processor import process_csv
-
 import io
+import os
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
+
+from api import classifier
+from api.batch_processor import MAX_ROWS, CSVError, process_csv
+from api.explainer import explain_text
+from api.schemas import ExplanationResponse, PredictionResponse, TextInput
+
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
+MAX_UPLOAD_BYTES = 2 * 1024 * 1024
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load the model at startup so the first visitor does not wait for it
+    if os.getenv("PRELOAD_MODEL", "1") == "1":
+        classifier.get_classifier()
+    yield
 
 
 app = FastAPI(
     title="Sentiment Analysis API",
-    description="RoBERTa + LIME based sentiment analysis with explainability",
-    version="1.0.0"
+    description="Three-class sentiment analysis with RoBERTa and word-level LIME explanations.",
+    version="1.1.0",
+    lifespan=lifespan,
 )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
-# ----------------------------
-# Health Check Endpoint
-# ----------------------------
-@app.get("/")
-def home():
+app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+
+
+@app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
+def serve_frontend():
+    return FileResponse(FRONTEND_DIR / "index.html")
+
+
+@app.api_route("/health", methods=["GET", "HEAD"])
+def health():
+    return {"status": "ok", "model_loaded": classifier.is_loaded()}
+
+
+@app.get("/model-info")
+def model_info():
     return {
-        "message": "Sentiment Analysis API is running"
+        "model": classifier.MODEL_NAME,
+        "labels": classifier.LABELS,
+        "evaluation": {
+            "dataset": "Amazon Fine Food Reviews, balanced sample of 15,000 (5,000 per class)",
+            "accuracy_3_class": 0.61,
+            "accuracy_on_positive_and_negative_reviews": 0.814,
+            "recall": {"negative": 0.74, "neutral": 0.20, "positive": 0.88},
+        },
+        "max_csv_rows": MAX_ROWS,
     }
 
 
-# ----------------------------
-# Prediction Endpoint (Fast)
-# ----------------------------
 @app.post("/predict", response_model=PredictionResponse)
-def get_prediction(data: TextInput):
-
-    result = predict(data.text)
-
-    return {
-        "label": result["label"],
-        "scores": result["scores"]
-    }
+def predict(data: TextInput):
+    return classifier.predict(data.text)
 
 
-# ----------------------------
-# Explanation Endpoint (Slow - LIME)
-# ----------------------------
 @app.post("/explain", response_model=ExplanationResponse)
-def get_explanation(data: TextInput):
+def explain(data: TextInput):
+    return explain_text(data.text)
 
-    result = explain_text(data.text)
 
-    return {
-        "prediction": result["prediction"],
-        "confidence": result["confidence"],
-        "explanation": result["explanation"]
-    }
 @app.post("/predict_csv")
-async def predict_csv(
-    file: UploadFile = File(...)
-):
-
-    df = process_csv(file.file)
+def predict_csv(file: UploadFile = File(...)):
+    raw = file.file.read(MAX_UPLOAD_BYTES + 1)
+    if len(raw) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="File is larger than 2 MB.")
+    try:
+        df = process_csv(raw)
+    except CSVError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     output = io.BytesIO()
-
-    df.to_csv(
-        output,
-        index=False
-    )
-
+    df.to_csv(output, index=False)
     output.seek(0)
-
     return StreamingResponse(
         output,
         media_type="text/csv",
-        headers={
-            "Content-Disposition":
-            "attachment; filename=predictions.csv"
-        }
+        headers={"Content-Disposition": "attachment; filename=sentiment_predictions.csv"},
     )
