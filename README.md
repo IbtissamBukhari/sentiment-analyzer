@@ -152,7 +152,7 @@ Python, RoBERTa, Hugging Face Transformers, ONNX Runtime, model quantization, LI
 ## Author
 
 **Syed Ali Ibtissam Bukhari**
-[GitHub](https://github.com/IbtissamBukhari) · [LinkedIn](https://www.linkedin.com/in/syed-ali-ibtissam-bukhari-50438028a)
+[GitHub](https://github.com/IbtissamBukhari) · [LinkedIn](https://www.linkedin.com/in/ibtissambukhari)
 
 ## License
 
